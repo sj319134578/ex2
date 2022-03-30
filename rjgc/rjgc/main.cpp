@@ -1,301 +1,366 @@
 #include <iostream>
-
 #include <queue>
 #include <algorithm>
 #include<fstream>
 #include<iostream>
-
+#include <cstdlib>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
 #define MAXN 50
 
-//ÎÊÌâ±íÊ¾
-int n=3,W=30;
-vector<int> w;//={0,16,15,15};		//ÖØÁ¿£¬ÏÂ±ê0²»ÓÃ
-vector<int> v;//={0,45,25,25};  	//¼ÛÖµ£¬ÏÂ±ê0²»ÓÃ
-//Çó½â½á¹û±íÊ¾
-int maxv=-9999;				//´æ·Å×î´ó¼ÛÖµ,³õÊ¼Îª×îĞ¡Öµ
-int bestx[MAXN];			//´æ·Å×îÓÅ½â,È«¾Ö±äÁ¿
-int total=1;				//½â¿Õ¼äÖĞ½áµãÊıÀÛ¼Æ,È«¾Ö±äÁ¿
+//é—®é¢˜è¡¨ç¤º
+int n;
+int W;
+int a1[110];
+vector<int> w;//={0,16,15,15};		//é‡é‡ï¼Œä¸‹æ ‡0ä¸ç”¨
+vector<int> v;//={0,45,25,25};  	//ä»·å€¼ï¼Œä¸‹æ ‡0ä¸ç”¨
+//æ±‚è§£ç»“æœè¡¨ç¤º
+int maxv=-9999;				//å­˜æ”¾æœ€å¤§ä»·å€¼,åˆå§‹ä¸ºæœ€å°å€¼
+int bestx[MAXN];			//å­˜æ”¾æœ€ä¼˜è§£,å…¨å±€å˜é‡
+int total=1;				//è§£ç©ºé—´ä¸­ç»“ç‚¹æ•°ç´¯è®¡,å…¨å±€å˜é‡
 
 
-/*  Ö÷¸É
- *  ->³õÊ¼»¯¸ù½Úµã
- *  ->¼ÆËã¸ù½ÚµãÉÏ½ç¼°½ø¶Ó
- *  ->Ñ­»·±éÀú¶ÓÁĞ£¬Ìõ¼şÎª·Ç¿Õ£º³öÒ»¸ö½Úµã,
-       ¼ÆËã×óº¢×Ó½Úµã¼ôÖ¦Ìõ¼ş£¬Âú×ãµÄ×óº¢×Ó¼ÆËãÉÏ½ç¼°½ø¶Ó£»
-       ¼ÆËãÓÒº¢×Ó½ÚµãÉÏ½ç£¬·ûºÏÉÏ½çÌõ¼şµÄÓÒº¢×Ó½ø¶Ó£»
-	   £¨¸ù¾İÈİÁ¿¼ôÈ¥²»Âú×ãÒªÇóµÄ×óº¢×Ó£¬¸ù¾İÉÏ½çÌõ¼ş¼ôÈ¥²»Âú×ãÒªÇóµÄÓÒº¢×Ó£©
+/*  ä¸»å¹²
+ *  ->åˆå§‹åŒ–æ ¹èŠ‚ç‚¹
+ *  ->è®¡ç®—æ ¹èŠ‚ç‚¹ä¸Šç•ŒåŠè¿›é˜Ÿ
+ *  ->å¾ªç¯éå†é˜Ÿåˆ—ï¼Œæ¡ä»¶ä¸ºéç©ºï¼šå‡ºä¸€ä¸ªèŠ‚ç‚¹,
+       è®¡ç®—å·¦å­©å­èŠ‚ç‚¹å‰ªææ¡ä»¶ï¼Œæ»¡è¶³çš„å·¦å­©å­è®¡ç®—ä¸Šç•ŒåŠè¿›é˜Ÿï¼›
+       è®¡ç®—å³å­©å­èŠ‚ç‚¹ä¸Šç•Œï¼Œç¬¦åˆä¸Šç•Œæ¡ä»¶çš„å³å­©å­è¿›é˜Ÿï¼›
+	   ï¼ˆæ ¹æ®å®¹é‡å‰ªå»ä¸æ»¡è¶³è¦æ±‚çš„å·¦å­©å­ï¼Œæ ¹æ®ä¸Šç•Œæ¡ä»¶å‰ªå»ä¸æ»¡è¶³è¦æ±‚çš„å³å­©å­ï¼‰
  *
 */
 void bfs();
-//  ½ø¶Ó----²»ÊÇÒ¶×Ó½Úµã¾ÍÖ±½Ó½ø¶Ó£¬ÊÇÒ¶×Ó½ÚµãÔòÅĞ¶ÏÊÇ·ñ¸üÓÅ½â£¬ÊÇµÄ»°Ôò¸üĞÂ×îÓÅ½â
+//  è¿›é˜Ÿ----ä¸æ˜¯å¶å­èŠ‚ç‚¹å°±ç›´æ¥è¿›é˜Ÿï¼Œæ˜¯å¶å­èŠ‚ç‚¹åˆ™åˆ¤æ–­æ˜¯å¦æ›´ä¼˜è§£ï¼Œæ˜¯çš„è¯åˆ™æ›´æ–°æœ€ä¼˜è§£
 
 
-// # »ØËİ·¨
-//  Ê¹ÓÃn,W,w[],v[],maxv,bestv[]
-//  mainº¯Êıµ÷ÓÃ£¬ÓÃÀ´³õÊ¼»¯rwºÍop£¬ÒÔ¼°dfs_backµÄÈë¿Ú
+// # å›æº¯æ³•
+//  ä½¿ç”¨n,W,w[],v[],maxv,bestv[]
+//  mainå‡½æ•°è°ƒç”¨ï¼Œç”¨æ¥åˆå§‹åŒ–rwå’Œopï¼Œä»¥åŠdfs_backçš„å…¥å£
 void bfs_back_main();
 
 void dfs_back(int i,int tw,int tv,int rw,int op[]);
 
+
+
 struct NodeType_Knap
 {
-	double w;
-	double v;
-	double p;					//p=v/w
-	bool operator<(const NodeType_Knap &s) const
-	{
-		return p>s.p;			//°´pµİ¼õÅÅĞò
-	}
+    double w;
+    double v;
+    double p;					//p=v/w
+    bool operator<(const NodeType_Knap &s) const
+    {
+        return p>s.p;			//æŒ‰pé€’å‡æ’åº
+    }
 };
-vector<NodeType_Knap> A;		        //  º¬ÓĞÊäÈëµÄÊı¾İºÍÅÅĞòºóµÄÊı¾İ
-double V = 0;					//  ¼ÛÖµ£¬Ö®Ç°ÊÇintĞÍ£¬ÔÚÕâÀïÎªdouble
-double x[MAXN];					//  ×îÓÅ½âdoubleÀàĞÍ£¬¿ÉÒÔÑ¡Ôñ²¿·Ö£¬¼´Ò»¶¨µÄ±ÈÀı
+vector<NodeType_Knap> A;		        //  å«æœ‰è¾“å…¥çš„æ•°æ®å’Œæ’åºåçš„æ•°æ®
+double V = 0;					//  ä»·å€¼ï¼Œä¹‹å‰æ˜¯intå‹ï¼Œåœ¨è¿™é‡Œä¸ºdouble
+double x[MAXN];					//  æœ€ä¼˜è§£doubleç±»å‹ï¼Œå¯ä»¥é€‰æ‹©éƒ¨åˆ†ï¼Œå³ä¸€å®šçš„æ¯”ä¾‹
 /*
- * Çóµ¥Î»ÖØÁ¿µÄ¼ÛÖµ->°´ÕÕ×Ô¶¨ÒåµÄ¸ñÊ½ÅÅĞò->µ÷ÓÃ Knap
+ * æ±‚å•ä½é‡é‡çš„ä»·å€¼->æŒ‰ç…§è‡ªå®šä¹‰çš„æ ¼å¼æ’åº->è°ƒç”¨ Knap
 */
 void knap_m();
 /*
- * ÅÅĞòºóÔòÌ°ĞÄÑ­»·Ñ¡Ôñ£¬Èç¹ûÊ£ÓàµÄÈİÁ¿»¹ÄÜÈİÄÉµ±Ç°µÄ£¬Ôò·Å½øÈ¥£¬²»ÄÜµÄ»°Ìø³öÑ­»·£¬Ñ¡Ôñ²¿·Ö·ÅÈë
+ * æ’åºååˆ™è´ªå¿ƒå¾ªç¯é€‰æ‹©ï¼Œå¦‚æœå‰©ä½™çš„å®¹é‡è¿˜èƒ½å®¹çº³å½“å‰çš„ï¼Œåˆ™æ”¾è¿›å»ï¼Œä¸èƒ½çš„è¯è·³å‡ºå¾ªç¯ï¼Œé€‰æ‹©éƒ¨åˆ†æ”¾å…¥
 */
 void Knap();
-// !# Ì°ĞÄ·¨
+// !# è´ªå¿ƒæ³•
 
-// # ì³²¨ÄÇÆõÊıÁĞ
+// # æ–æ³¢é‚£å¥‘æ•°åˆ—
 int countf = 1;
 int Fib(int n);
-int dp_fib[MAXN];				//ËùÓĞÔªËØ³õÊ¼»¯Îª0
+int dp_fib[MAXN];				//æ‰€æœ‰å…ƒç´ åˆå§‹åŒ–ä¸º0
 int Fib1(int n);
-// !# ì³²¨ÄÇÆõÊıÁĞ
-
-
+// !# æ–æ³¢é‚£å¥‘æ•°åˆ—
 int dp[MAXN][MAXN];
 
 void dp_Knap();
 /*
- * ¶¯Ì¬¹æ»®Êı×éÒÑ¾­Ìî³äÍê±Ï£¬Äæ×ÅÍÆ³ö×îÓÅ½â
-   ¸ù¾İ×´Ì¬×ªÒÆ·½³ÌÖĞµÄÌõ¼ş£¬ÅĞ¶ÏÃ¿¸öÎïÆ·ÊÇ·ñÑ¡Ôñ
+ * åŠ¨æ€è§„åˆ’æ•°ç»„å·²ç»å¡«å……å®Œæ¯•ï¼Œé€†ç€æ¨å‡ºæœ€ä¼˜è§£
+   æ ¹æ®çŠ¶æ€è½¬ç§»æ–¹ç¨‹ä¸­çš„æ¡ä»¶ï¼Œåˆ¤æ–­æ¯ä¸ªç‰©å“æ˜¯å¦é€‰æ‹©
 */
 void buildx();
-// !# ¶¯Ì¬¹æ»®·¨
+// !# åŠ¨æ€è§„åˆ’æ³•
+
+void readfile(string filename);
 
 int main()
 {
-	//  ÊäÈë¸ñÊ½
-	/*
-		3      n¸öÎïÆ·¼ÙÉèÎª3
-		16 45  µÚÒ»¸öÎïÆ·µÄÖØÁ¿ºÍ¼ÛÖµ
-		15 25  µÚ¶ş¸öÎïÆ·µÄÖØÁ¿ºÍ¼ÛÖµ
-		15 25  µÚÈı¸öÎïÆ·µÄÖØÁ¿ºÍ¼ÛÖµ
-		30	   ±³°üÈİÁ¿W
-	*/
-	using namespace std;
+    //  è¾“å…¥æ ¼å¼
+    /*
+    	3      nä¸ªç‰©å“å‡è®¾ä¸º3
+    	16 45  ç¬¬ä¸€ä¸ªç‰©å“çš„é‡é‡å’Œä»·å€¼
+    	15 25  ç¬¬äºŒä¸ªç‰©å“çš„é‡é‡å’Œä»·å€¼
+    	15 25  ç¬¬ä¸‰ä¸ªç‰©å“çš„é‡é‡å’Œä»·å€¼
+    	30	   èƒŒåŒ…å®¹é‡W
+    */
+    using namespace std;
+    string filename;
+    int s;
+    printf("è¯·è¾“å…¥è¦è¯»å–çš„æ–‡ä»¶ï¼Œï¼ˆ0~9ï¼‰ï¼š");
+    scanf("%d",&s);
+    switch(s)
+    {
+    case 0:
+        filename="data\\beibao0.in";
+        break;
+        case 1:
+        filename="data\\beibao1.in";
+        break;
+        case 2:
+        filename="data\\beibao2.in";
+        break;
+        case 3:
+        filename="data\\beibao3.in";
+        break;
+        case 4:
+        filename="data\\beibao4.in";
+        break;
+        case 5:
+        filename="data\\beibao5.in";
+        break;
+        case 6:
+        filename="data\\beibao6.in";
+        break;
+        case 7:
+        filename="data\\beibao7.in";
+        break;
+        case 8:
+        filename="data\\beibao8.in";
+        break;
+        case 9:
+        filename="data\\beibao9.in";
+        break;
+    }
+    readfile(filename);
+    W=a1[0];
+    n=a1[1];
+    int m,l;
+    //  ä¸‹æ ‡0ä¸ç”¨ï¼Œå¡«å……0
+    w.push_back(0);
+    v.push_back(0);
+    int j;
+    for (j = 2; a1[j] != '\0'; j=j+2)
+    {
 
-	fstream f;
-	//ÎÄ¼ş¶ÁÈ¡£¬°ÑÔ­À´µÄios::out¸Ä³Éios::in
-	f.open("data.txt",ios::in);
-	string s;
-	//Ò»Ö±¶Áµ½ÎÄ¼şÄ©Î²
-	while(f>>s)
-	cout<<s<<endl; //ÏÔÊ¾¶ÁÈ¡ÄÚÈİ
-	f.close();
+        w.push_back(a1[j]);
+        v.push_back(a1[j+1]);
+    }
 
 
-	//cin >> n;
-	int m,l;
-	//  ÏÂ±í0²»ÓÃ£¬Ìî³ä0
-	w.push_back(0);
-	v.push_back(0);
-	int j;
-	for (j = 1; j <= n;j++)
-	{
-		cin >> m >> l;
-		w.push_back(m);
-		v.push_back(l);
-	}
-	cin >> W;
+    dp_Knap();
+    buildx();
+    // !# åŠ¨æ€è§„åˆ’æ³•
 
+    cout << "æœ€ä¼˜è§£ï¼š";
+    for (int i = 1; i <= n; i++)
+    {
+        if (V > 0)
+        {
+            // è´ªå¿ƒæ³•   è¾“å‡ºçš„æ˜¯doubleç±»å‹
+            cout << x[i] << " ";
+        }
+        else
+        {
+            //  å›æº¯æ³•è¾“å‡ºçš„æ˜¯intå‹
+            cout << bestx[i] << " ";
+        }
 
-	dp_Knap();
-	buildx();
-	// !# ¶¯Ì¬¹æ»®·¨
+    }
+    if (V > 0)
+    {
+        // è´ªå¿ƒæ³•   è¾“å‡ºçš„æ˜¯doubleç±»å‹
+        cout << endl << "æœ€å¤§ä»·å€¼ä¸ºï¼š" << V << endl;
+    }
+    else
+    {
+        //  å›æº¯æ³•è¾“å‡ºçš„æ˜¯intå‹
+        cout << endl << "æœ€å¤§ä»·å€¼ä¸ºï¼š" << maxv << endl;
+    }
 
-	cout << "×îÓÅ½â£º";
-	for (int i = 1;i <= n;i++)
-	{
-		if (V > 0)
-		{// Ì°ĞÄ·¨   Êä³öµÄÊÇdoubleÀàĞÍ
-			cout << x[i] << " ";
-		}else
-		{//  »ØËİ·¨Êä³öµÄÊÇintĞÍ
-			cout << bestx[i] << " ";
-		}
-
-	}
-	if (V > 0)
-	{// Ì°ĞÄ·¨   Êä³öµÄÊÇdoubleÀàĞÍ
-		cout << endl << "×î´ó¼ÛÖµÎª£º" << V << endl;
-	}else
-	{//  »ØËİ·¨Êä³öµÄÊÇintĞÍ
-		cout << endl << "×î´ó¼ÛÖµÎª£º" << maxv << endl;
-	}
-
-	return 0;
+    return 0;
 }
 //
+void readfile(string filename)
+{
+    ifstream fin(filename);
+    string s;
+    int i=0;
+    if (!fin)//æ£€æµ‹æ–‡ä»¶è¾“å…¥æ˜¯å¦æ­£å¸¸
+    {
+        cout << "æ–‡ä»¶ä¸èƒ½æ‰“å¼€" << endl;
+    }
+    else
+    {
+        while (fin >> s)
+        {
+            a1[i]=atoi(s.c_str());
+            cout << a1[i]<< ' ';
+            i++;
 
-//  »ØËİ·¨
+        }
+        cout << endl;
+    }
+    fin.close();
+}
+
+//  å›æº¯æ³•
 void bfs_back_main()
 {
-	int *op  = new int[n];
-	for (int j = 0;j < n;j++)
-	{//  ³õÊ¼»¯ÎªÈ«0
-		op[j] = 0;
-	}
-	//  ËùÓĞÎïÆ·µÄ×ÜÈİÁ¿
-	int rw = 0;
-	for (int j = 0;j < n;j++)
-	{
-		rw += w[j];
-	}
-	dfs_back(1,0,0,rw,op);
+    int *op  = new int[n];
+    for (int j = 0; j < n; j++)
+    {
+        //  åˆå§‹åŒ–ä¸ºå…¨0
+        op[j] = 0;
+    }
+    //  æ‰€æœ‰ç‰©å“çš„æ€»å®¹é‡
+    int rw = 0;
+    for (int j = 0; j < n; j++)
+    {
+        rw += w[j];
+    }
+    dfs_back(1,0,0,rw,op);
 }
-//Çó½â0/1±³°üÎÊÌâ
+//æ±‚è§£0/1èƒŒåŒ…é—®é¢˜
 void dfs_back(int i,int tw,int tv,int rw,int op[])
-{  //³õÊ¼µ÷ÓÃÊ±rwÎªËùÓĞÎïÆ·ÖØÁ¿ºÍ
-	int j;
-	if (i>n)				        //ÕÒµ½Ò»¸öÒ¶×Ó½áµã
-	{
-		if (tw==W && tv>maxv) 		        //ÕÒµ½Ò»¸öÂú×ãÌõ¼şµÄ¸üÓÅ½â,±£´æ
-		{
-			maxv=tv;
-			for (j=1;j<=n;j++)		//¸´ÖÆ×îÓÅ½â
-				bestx[j]=op[j];
-		}
-	}else
-	{				                //ÉĞÎ´ÕÒÍêËùÓĞÎïÆ·
-		if (tw+w[i]<=W)			        //×óº¢×Ó½áµã¼ôÖ¦
-		{
-			op[i]=1;			//Ñ¡È¡µÚi¸öÎïÆ·
-			dfs_back(i+1,tw+w[i],tv+v[i],rw-w[i],op);
-		}
-		op[i]=0;				//²»Ñ¡È¡µÚi¸öÎïÆ·,»ØËİ
-		if (tw+rw>W)			        //ÓÒº¢×Ó½áµã¼ôÖ¦
-			dfs_back(i+1,tw,tv,rw-w[i],op);
-	}
+{
+    //åˆå§‹è°ƒç”¨æ—¶rwä¸ºæ‰€æœ‰ç‰©å“é‡é‡å’Œ
+    int j;
+    if (i>n)				        //æ‰¾åˆ°ä¸€ä¸ªå¶å­ç»“ç‚¹
+    {
+        if (tw==W && tv>maxv) 		        //æ‰¾åˆ°ä¸€ä¸ªæ»¡è¶³æ¡ä»¶çš„æ›´ä¼˜è§£,ä¿å­˜
+        {
+            maxv=tv;
+            for (j=1; j<=n; j++)		//å¤åˆ¶æœ€ä¼˜è§£
+                bestx[j]=op[j];
+        }
+    }
+    else
+    {
+        //å°šæœªæ‰¾å®Œæ‰€æœ‰ç‰©å“
+        if (tw+w[i]<=W)			        //å·¦å­©å­ç»“ç‚¹å‰ªæ
+        {
+            op[i]=1;			//é€‰å–ç¬¬iä¸ªç‰©å“
+            dfs_back(i+1,tw+w[i],tv+v[i],rw-w[i],op);
+        }
+        op[i]=0;				//ä¸é€‰å–ç¬¬iä¸ªç‰©å“,å›æº¯
+        if (tw+rw>W)			        //å³å­©å­ç»“ç‚¹å‰ªæ
+            dfs_back(i+1,tw,tv,rw-w[i],op);
+    }
 }
 //
-//  Ì°ĞÄ·¨
+//  è´ªå¿ƒæ³•
 void knap_m()
 {
 
-	for (int i=0;i<=n;i++)
-	{
-		NodeType_Knap k;
-		k.w = w[i];
-		k.v = v[i];
-		A.push_back(k);
-	}
+    for (int i=0; i<=n; i++)
+    {
+        NodeType_Knap k;
+        k.w = w[i];
+        k.v = v[i];
+        A.push_back(k);
+    }
 
-	for (int i=1;i<=n;i++)		//Çóv/w
-		A[i].p=A[i].v/A[i].w;
+    for (int i=1; i<=n; i++)		//æ±‚v/w
+        A[i].p=A[i].v/A[i].w;
 
-	sort(++A.begin(),A.end());			//A[1..n]ÅÅĞò
+    sort(++A.begin(),A.end());			//A[1..n]æ’åº
 
-	Knap();
+    Knap();
 
 }
-//  Çó½â±³°üÎÊÌâ²¢·µ»Ø×Ü¼ÛÖµ
+//  æ±‚è§£èƒŒåŒ…é—®é¢˜å¹¶è¿”å›æ€»ä»·å€¼
 void Knap()
 {
-	V=0;						//V³õÊ¼»¯Îª0
-	double weight=W;				//±³°üÖĞÄÜ×°ÈëµÄÓàÏÂÖØÁ¿
+    V=0;						//Våˆå§‹åŒ–ä¸º0
+    double weight=W;				//èƒŒåŒ…ä¸­èƒ½è£…å…¥çš„ä½™ä¸‹é‡é‡
 
-	int i=1;
-	while (A[i].w < weight)			        //ÎïÆ·iÄÜ¹»È«²¿×°ÈëÊ±Ñ­»·
-	{
-		x[i]=1;					//×°ÈëÎïÆ·i
-		weight -= A[i].w;			//¼õÉÙ±³°üÖĞÄÜ×°ÈëµÄÓàÏÂÖØÁ¿
-		V += A[i].v;				//ÀÛ¼Æ×Ü¼ÛÖµ
-		i++;					//¼ÌĞøÑ­»·
-	}
-	if (weight > 0)					//µ±ÓàÏÂÖØÁ¿´óÓÚ0
-	{
-		x[i] = weight / A[i].w;		        //½«ÎïÆ·iµÄÒ»²¿·Ö×°Èë
-		V += x[i] * A[i].v;			//ÀÛ¼Æ×Ü¼ÛÖµ
-	}
+    int i=1;
+    while (A[i].w < weight)			        //ç‰©å“ièƒ½å¤Ÿå…¨éƒ¨è£…å…¥æ—¶å¾ªç¯
+    {
+        x[i]=1;					//è£…å…¥ç‰©å“i
+        weight -= A[i].w;			//å‡å°‘èƒŒåŒ…ä¸­èƒ½è£…å…¥çš„ä½™ä¸‹é‡é‡
+        V += A[i].v;				//ç´¯è®¡æ€»ä»·å€¼
+        i++;					//ç»§ç»­å¾ªç¯
+    }
+    if (weight > 0)					//å½“ä½™ä¸‹é‡é‡å¤§äº0
+    {
+        x[i] = weight / A[i].w;		        //å°†ç‰©å“içš„ä¸€éƒ¨åˆ†è£…å…¥
+        V += x[i] * A[i].v;			//ç´¯è®¡æ€»ä»·å€¼
+    }
 
 }
-//
-//  ì³²¨ÄÇÆõÊıÁĞ
+
+//  æ–æ³¢é‚£å¥‘æ•°åˆ—
 int Fib(int n)
 {
-	printf("(%d)Çó½âFib(%d)\n",countf++,n);
-	if (n==1 || n==2)
-	{
-		printf("   ¼ÆËã³öFib(%d)=%d\n",n,1);
-		return 1;
-	}
-	else
-	{
-		int x = Fib(n-1);
-		int y = Fib(n-2);
-		printf("   ¼ÆËã³öFib(%d)=Fib(%d)+Fib(%d)=%d\n",
-		n,n-1,n-2,x+y);
-		return x+y;
-	}
+    printf("(%d)æ±‚è§£Fib(%d)\n",countf++,n);
+    if (n==1 || n==2)
+    {
+        printf("   è®¡ç®—å‡ºFib(%d)=%d\n",n,1);
+        return 1;
+    }
+    else
+    {
+        int x = Fib(n-1);
+        int y = Fib(n-2);
+        printf("   è®¡ç®—å‡ºFib(%d)=Fib(%d)+Fib(%d)=%d\n",
+               n,n-1,n-2,x+y);
+        return x+y;
+    }
 
 }
-//  ¶¯Ì¬¹æ»®ºóµÄì³²¨ÄÇÆõÊıÁĞ
-int Fib1(int n)			//Ëã·¨1
+
+//  åŠ¨æ€è§„åˆ’åçš„æ–æ³¢é‚£å¥‘æ•°åˆ—
+int Fib1(int n)			//ç®—æ³•1
 {
-	dp_fib[1]=dp_fib[2]=1;
-	printf("(%d)¼ÆËã³öFib(1)=1\n",countf++);
-	printf("(%d)¼ÆËã³öFib(2)=1\n",countf++);
-	for (int i=3;i<=n;i++)
-	{
-		dp_fib[i]=dp_fib[i-1]+dp_fib[i-2];
-		printf("(%d)¼ÆËã³öFib(%d)=%d\n",countf++,i,dp_fib[i]);
-	}
-	return dp_fib[n];
+    dp_fib[1]=dp_fib[2]=1;
+    printf("(%d)è®¡ç®—å‡ºFib(1)=1\n",countf++);
+    printf("(%d)è®¡ç®—å‡ºFib(2)=1\n",countf++);
+    for (int i=3; i<=n; i++)
+    {
+        dp_fib[i]=dp_fib[i-1]+dp_fib[i-2];
+        printf("(%d)è®¡ç®—å‡ºFib(%d)=%d\n",countf++,i,dp_fib[i]);
+    }
+    return dp_fib[n];
 }
 
 //
-//  ¶¯Ì¬¹æ»®·¨
+//  åŠ¨æ€è§„åˆ’æ³•
 void dp_Knap()
 {
-	int i,r;
-	for(i = 0;i <= n;i++)		//ÖÃ±ß½çÌõ¼şdp[i][0]=0
-		dp[i][0] = 0;
-	for (r = 0;r <= W;r++)		//ÖÃ±ß½çÌõ¼şdp[0][r]=0
-		dp[0][r] = 0;
-	for (i = 1;i <= n;i++)
-	{
-		for (r = 1;r <= W;r++)
-			if (r < w[i])
-				dp[i][r] = dp[i-1][r];
-			else
-				dp[i][r] = max(dp[i-1][r],dp[i-1][r-w[i]]+v[i]);
-	}
+    int i,r;
+    for(i = 0; i <= n; i++)		//ç½®è¾¹ç•Œæ¡ä»¶dp[i][0]=0
+        dp[i][0] = 0;
+    for (r = 0; r <= W; r++)		//ç½®è¾¹ç•Œæ¡ä»¶dp[0][r]=0
+        dp[0][r] = 0;
+    for (i = 1; i <= n; i++)
+    {
+        for (r = 1; r <= W; r++)
+            if (r < w[i])
+                dp[i][r] = dp[i-1][r];
+            else
+                dp[i][r] = max(dp[i-1][r],dp[i-1][r-w[i]]+v[i]);
+    }
 
 }
 void buildx()
 {
-	int i=n,r=W;
-	maxv=0;
-	while (i>=0)				//ÅĞ¶ÏÃ¿¸öÎïÆ·
-	{
-		if (dp[i][r] != dp[i-1][r])
-		{
-			bestx[i] = 1;		//Ñ¡È¡ÎïÆ·i
-			maxv += v[i];		//ÀÛ¼Æ×Ü¼ÛÖµ
-			r = r - w[i];
-		}
-		else
-			bestx[i]=0;		//²»Ñ¡È¡ÎïÆ·i
-		i--;
-	}
+    int i=n,r=W;
+    maxv=0;
+    while (i>=0)				//åˆ¤æ–­æ¯ä¸ªç‰©å“
+    {
+        if (dp[i][r] != dp[i-1][r])
+        {
+            bestx[i] = 1;		//é€‰å–ç‰©å“i
+            maxv += v[i];		//ç´¯è®¡æ€»ä»·å€¼
+            r = r - w[i];
+        }
+        else
+            bestx[i]=0;		//ä¸é€‰å–ç‰©å“i
+        i--;
+    }
 
 }
